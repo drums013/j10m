@@ -52,7 +52,7 @@ public class Platform {
     capabilities.setCapability("appPackage", "org.wikipedia");
     capabilities.setCapability("appActivity", ".main.MainActivity");
     capabilities.setCapability
-            ("app", "/Users/t/Desktop/org.wikipedia.apk");
+            ("app", "C://Program Files/Git/JavaAppiumAutomation/apks/org.wikipedia.apk");
     return capabilities;
   }
 
