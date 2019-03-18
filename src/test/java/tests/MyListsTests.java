@@ -31,24 +31,17 @@ public class MyListsTests extends CoreTestCase {
     if (Platform.getInstance().isAndroid()) {
       articlePageObject.addArticleToMyList(nameOfFolder);
     } else {
-      articlePageObject.addArticlesToMySaved();
+      articlePageObject.addArticlesToMySaved(login, password);
     }
     if (Platform.getInstance().isMV()) {
-      AuthorizationPageObject auth = new AuthorizationPageObject(driver);
-      auth.clickAuthButton();
-      auth.enterLoginData(login, password);
-      auth.submitForm();
-
       articlePageObject.waitForTitleElement();
       assertEquals("We are not on the same page after login",
               articleTitle, articlePageObject.getArticleTitle());
-      articlePageObject.addArticlesToMySaved();
+      articlePageObject.addArticlesToMySaved(login, password);
     }
-
     articlePageObject.closeArticle();
 
     NavigationUI navigationUI = NavigationUIFactory.get(driver);
-    navigationUI.openNavigation();
     navigationUI.clickMyLists();
 
     MyListsPageObject myListsPageObject = MyListsPageObjectFactory.get(driver);
@@ -65,8 +58,8 @@ public class MyListsTests extends CoreTestCase {
     String nameOfFolder = "My list";
 
     ArticlePageObject articlePageObject = ArticlePageObjectFactory.get(driver);
-    String firstSavedArticle = articlePageObject.saveAnyFoundArticle(firstQuery, nameOfFolder);
-    String secondSavedArticle = articlePageObject.saveAnyFoundArticle(secondQuery, nameOfFolder);
+    String firstSavedArticle = articlePageObject.saveAnyFoundArticle(firstQuery, nameOfFolder, login, password);
+    String secondSavedArticle = articlePageObject.saveAnyFoundArticle(secondQuery, nameOfFolder, login, password);
 
     NavigationUI navigationUI = NavigationUIFactory.get(driver);
     navigationUI.clickMyLists();
@@ -74,7 +67,7 @@ public class MyListsTests extends CoreTestCase {
     MyListsPageObject myListsPageObject = MyListsPageObjectFactory.get(driver);
     myListsPageObject.removeSavedArticleFromFolder(nameOfFolder, firstSavedArticle);
     List<String> articlesRemainingInList = articlePageObject.articles();
-    if (Platform.getInstance().isAndroid()) {
+    if (!Platform.getInstance().isIOS()) {
       articlePageObject.selectArticleByTitle(secondSavedArticle);
     }
     String ActualTitleOfSavedArticle = articlePageObject.getTitleOfSavedArticle(secondSavedArticle);
@@ -83,6 +76,6 @@ public class MyListsTests extends CoreTestCase {
             articlesRemainingInList.stream().anyMatch(secondSavedArticle::equals));
     assertEquals("Instead of an article called '" + secondSavedArticle + "'" +
                     ", an article called '" + ActualTitleOfSavedArticle + "' was opened",
-            secondSavedArticle, ActualTitleOfSavedArticle);
+            secondSavedArticle.toLowerCase(), ActualTitleOfSavedArticle.toLowerCase());
   }
 }

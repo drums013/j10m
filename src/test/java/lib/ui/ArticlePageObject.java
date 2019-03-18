@@ -67,7 +67,7 @@ abstract public class ArticlePageObject extends MainPageObject {
   }
 
   public String getTitleOfSavedArticle(String articleTitle) {
-    if (Platform.getInstance().isAndroid()) {
+    if (Platform.getInstance().isAndroid() || Platform.getInstance().isMV()) {
       return getArticleTitle();
     } else {
       String articleXpath = getArticleXpathByName(articleTitle);
@@ -120,8 +120,14 @@ abstract public class ArticlePageObject extends MainPageObject {
   public List<WebElement> listOfFoundArticles() {
     if (Platform.getInstance().isAndroid()) {
       return By.id(TITLES_ELEMENTS).findElements(driver);
-    } else {
+    } else if (Platform.getInstance().isIOS()) {
       return By.xpath(TITLES_ELEMENTS).findElements(driver);
+    } else {
+      waitForElementPresent(
+              "css:" + TITLES_ELEMENTS,
+              "No results found",
+              5);
+      return By.cssSelector(TITLES_ELEMENTS).findElements(driver);
     }
   }
 
@@ -169,20 +175,34 @@ abstract public class ArticlePageObject extends MainPageObject {
             5);
   }
 
-  public void addArticlesToMySaved() {
+  public void addArticlesToMySaved(String login, String password) {
     if (Platform.getInstance().isMV()) {
       this.removeArticleFromSavedIfItAdded();
     }
+    saveArticle();
+    if (Platform.getInstance().isMV() && isPresentLoginView()) {
+      AuthorizationPageObject auth = new AuthorizationPageObject(driver);
+      auth.signIn(login, password);
+      removeArticleFromSavedIfItAdded();
+      saveArticle();
+    }
+    if (Platform.getInstance().isIOS() && isPresentLoginView()) {
+      closeLoginView();
+    }
+  }
+
+  private void closeLoginView() {
+    waitForElementAndClick(
+            LOGIN_VIEW_CLOSE_BUTTON,
+            "Cannot find login view close button",
+            5);
+  }
+
+  private void saveArticle() {
     waitForElementAndClick(
             OPTIONS_ADD_TO_MY_LIST_BUTTON,
             "Cannot find option to add article to reading list",
             5);
-    if (isPresentLoginView()) {
-      waitForElementAndClick(
-              LOGIN_VIEW_CLOSE_BUTTON,
-              "Cannot find login view close button",
-              5);
-    }
   }
 
   public void removeArticleFromSavedIfItAdded() {
@@ -192,15 +212,20 @@ abstract public class ArticlePageObject extends MainPageObject {
               "Cannot click button to remove an article from saved",
               1);
       this.waitForElementPresent(
-              OPTIONS_REMOVE_FROM_MY_LIST_BUTTON,
+              OPTIONS_ADD_TO_MY_LIST_BUTTON,
               "Cannot find button to add an article to saved list after removing it from this list before",
               5);
     }
   }
 
   public boolean isPresentLoginView() {
-    List elements = driver.findElements(By.xpath(LOGIN_VIEW));
-    return elements.size() > 0;
+    if (Platform.getInstance().isIOS()) {
+      List elements = driver.findElements(By.xpath(LOGIN_VIEW));
+      return elements.size() > 0;
+    } else {
+      List elements = driver.findElements(By.cssSelector(LOGIN_VIEW));
+      return elements.size() > 0;
+    }
   }
 
   public List<WebElement> listOfArticleElements() {
@@ -237,15 +262,18 @@ abstract public class ArticlePageObject extends MainPageObject {
       if (Platform.getInstance().isAndroid()) {
         String text = element.getAttribute(TEXT_ATTRIBUTE);
         searchingResults.add(text);
-      } else {
+      } else if (Platform.getInstance().isIOS()) {
         String text = element.getAttribute(NAME_ATTRIBUTE);
+        searchingResults.add(text);
+      } else {
+        String text = element.getText();
         searchingResults.add(text);
       }
     }
     return new ArrayList<String>(searchingResults);
   }
 
-  public String saveAnyFoundArticle(String searchQuery, String nameOfFolder) {
+  public String saveAnyFoundArticle(String searchQuery, String nameOfFolder, String login, String password) {
     findArticleInSearch(searchQuery);
     if (Platform.getInstance().isIOS()) {
       SearchPageObject searchPageObject = SearchPageObjectFactory.get(driver);
@@ -256,10 +284,12 @@ abstract public class ArticlePageObject extends MainPageObject {
     if (Platform.getInstance().isAndroid()) {
       addArticleToReadingList(nameOfFolder);
     } else {
-      addArticlesToMySaved();
+      addArticlesToMySaved(login, password);
     }
-    NavigationUI navigationUI = NavigationUIFactory.get(driver);
-    navigationUI.comeBack();
+    if (!Platform.getInstance().isMV()) {
+      NavigationUI navigationUI = NavigationUIFactory.get(driver);
+      navigationUI.comeBack();
+    }
     return articleTitle;
   }
 

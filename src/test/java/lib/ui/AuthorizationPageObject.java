@@ -41,7 +41,13 @@ public class AuthorizationPageObject extends MainPageObject {
   public void submitForm() {
     this.waitForElementAndClick(
             SUBMIT_BUTTON,
-            "Cannod find and click submit auth button",
+            "Cannot find and click submit auth button",
             5);
+  }
+
+  public void signIn(String login, String password) {
+    this.clickAuthButton();
+    this.enterLoginData(login, password);
+    this.submitForm();
   }
 }

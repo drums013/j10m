@@ -6,6 +6,8 @@ import lib.ui.WelcomePageObject;
 import org.openqa.selenium.ScreenOrientation;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
+import java.util.concurrent.TimeUnit;
+
 public class CoreTestCase extends TestCase {
 
   protected RemoteWebDriver driver;
@@ -14,6 +16,9 @@ public class CoreTestCase extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     driver = Platform.getInstance().getDriver();
+    if (driver instanceof RemoteWebDriver) {
+      driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+    }
 
     //Exercise #7
     if (driver instanceof AppiumDriver) {

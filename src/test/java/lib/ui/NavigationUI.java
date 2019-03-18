@@ -15,15 +15,17 @@ abstract public class NavigationUI extends MainPageObject{
 
   public void clickMyLists() {
     if (Platform.getInstance().isMV()) {
+      this.openNavigation();
       this.tryClickElementWithFewAttempts(
               MY_LISTS_LINK,
               "Cannot find navigation button to My List",
               20);
+    } else {
+      this.waitForElementAndClick(
+              MY_LISTS_LINK,
+              "Cannot find navigation button to My List",
+              5);
     }
-    this.waitForElementAndClick(
-            MY_LISTS_LINK,
-            "Cannot find navigation button to My List",
-            5);
   }
 
   public void comeBack() {

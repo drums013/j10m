@@ -8,7 +8,8 @@ abstract public class MyListsPageObject extends MainPageObject {
   protected static String
           FOLDER_BY_NAME_TPL,
           ARTICLE_BY_TITLE_TPL,
-          REMOVE_FROM_SAVED_BUTTON;
+          REMOVE_FROM_SAVED_BUTTON,
+          NOTIFICATION;
 
   /* TEMPLATES METHODS */
   private static String getFolderXpathByName(String nameOfFolder) {
@@ -39,26 +40,37 @@ abstract public class MyListsPageObject extends MainPageObject {
   public void swipeByArticleToDelete(String articleTitle) {
     String articleXpath = getSavedArticleXpathByTitle(articleTitle);
     this.waitForElementPresent(articleXpath,
-            "Articles titled " + articleTitle + " are not listed.", 5);
+            "Articles titled " + articleTitle + " are not listed.",
+            5);
     if (Platform.getInstance().isIOS() || Platform.getInstance().isAndroid()) {
-      this.swipeElementToLeft(
-              articleXpath,
-              "Cannot find saved article");
+      removeArticleFromListInApp(articleXpath);
     } else {
-      String removeLocator = getRemoveButtonByTitle(articleTitle);
-      this.waitForElementAndClick(
-              removeLocator,
-              "Cannot click button to remove article from saved",
-              10);
-    }
-
-    if (Platform.getInstance().isIOS()) {
-      this.clickElementToTheRightUpperCorner(articleXpath, "Cannot find saved article");
-    }
-    if (Platform.getInstance().isMV()) {
-      driver.navigate().refresh();
+      removeArticleFromListInMW(articleTitle);
     }
     this.waitForArticleToDisappearByTitle(articleTitle);
+  }
+
+  private void removeArticleFromListInApp(String articleXpath) {
+    this.swipeElementToLeft(
+            articleXpath,
+            "Cannot find saved article");
+    if (Platform.getInstance().isIOS()) {
+      this.clickElementToTheRightUpperCorner(articleXpath,
+              "Cannot find saved article");
+    }
+  }
+
+  private void removeArticleFromListInMW(String articleTitle) {
+    String removeLocator = getRemoveButtonByTitle(articleTitle);
+    this.waitForElementAndClick(
+            removeLocator,
+            "Cannot click button to remove article from saved",
+            10);
+    waitForElementNotPresent(
+            NOTIFICATION,
+            "Notification still present",
+            15);
+    driver.navigate().refresh();
   }
 
   public void waitForArticleToDisappearByTitle(String articleTitle) {
