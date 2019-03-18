@@ -21,7 +21,8 @@ abstract public class SearchPageObject extends MainPageObject {
           SEARCH_PROGRESS_BAR,
           SEARCH_RESULTS_BY_TITLE_AND_DESCRIPTION_TPL,
           NAVIGATION_BAR,
-          CLEAR_SEARCH_INPUT_BUTTON;
+          CLEAR_SEARCH_INPUT_BUTTON,
+          ARTICLE_BY_TITLE_TPL;
 
   public SearchPageObject(RemoteWebDriver driver) {
     super(driver);
@@ -29,7 +30,11 @@ abstract public class SearchPageObject extends MainPageObject {
 
   /* TEMPLATES METHODS */
   private static String getResultSearchElement(String substring) {
-    return SEARCH_RESULT_BY_SUBSTRING_TPL.replace("{SUBSTRING}", substring);
+    if (!Platform.getInstance().isMV()) {
+      return SEARCH_RESULT_BY_SUBSTRING_TPL.replace("{SUBSTRING}", substring);
+    } else {
+      return ARTICLE_BY_TITLE_TPL.replace("{ARTICLE_TITLE}", substring);
+    }
   }
 
   private static String getResultSearchByTitleAndDescription(String title, String description) {
@@ -187,6 +192,9 @@ abstract public class SearchPageObject extends MainPageObject {
     } else {
       ArticlePageObject articlePageObject = ArticlePageObjectFactory.get(driver);
       List<String> articles = articlePageObject.articles();
+      if (articles.size() < numberOfArticles) {
+        throw new AssertionError("The number of articles in the list is less than " + numberOfArticles);
+      }
       int i = 0;
       while (i < numberOfArticles) {
         String articleTitle = articles.iterator().next();

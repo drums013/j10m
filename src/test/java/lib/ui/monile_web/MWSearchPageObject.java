@@ -17,6 +17,7 @@ public class MWSearchPageObject extends SearchPageObject {
     SEARCH_PROGRESS_BAR = "id:org.wikipedia:id/search_progress_bar";
     SEARCH_RESULTS_BY_TITLE_AND_DESCRIPTION_TPL = "xpath://*[android.widget.TextView[@text='{ARTICLE_TITLE}']" +
             " and android.widget.TextView[@text='{ARTICLE_DESCRIPTION}']]";
+    ARTICLE_BY_TITLE_TPL = "xpath://li[contains(@title, '{ARTICLE_TITLE}')]";
   }
 
   public MWSearchPageObject(RemoteWebDriver driver) {
